@@ -4,7 +4,7 @@
 class Storylet
   def initialize(id)
     @_id = id
-    @_choice = []
+    @_actions = []
   end
 
   def define(&block)
@@ -20,10 +20,76 @@ class Storylet
     @_body = b
   end
 
-  def fixed_choice(&blk)
-    choice = FixedChoice.new
-    choice.define(&blk)
+  def choice(&blk)
+    c = Choice.new
+    c.define(&blk)
+    @_actions.append(c)
   end
+
+  def check(&blk)
+    c = Check.new
+    c.define(&blk)
+    @_actions.append(c)
+  end
+end
+
+class Choice
+  def description(d)
+    @_description = d
+  end
+
+  def outcome(&blk)
+    @_outcome = Outcome.new
+    @_outcome.define(&blk)
+  end
+
+  def requires(&blk)
+    @_requirements = Requirements.new
+    @_requirements.define(&blk)
+  end
+
+  def define(&blk)
+    instance_eval(&blk)
+    self
+  end
+end
+
+class Check < Choice
+  undef_method :outcome
+
+  def check(quality, target)
+    @_target_quality = quality
+    @_target_number = target
+  end
+
+  def success(&blk)
+    @_success = Outcome.new
+    @_success.define(&blk)
+  end
+
+  def failure(&blk)
+    @_failure = Outcome.new
+    @_failure.define(&blk)
+  end
+end
+
+class Risk < Choice
+  undef_method :outcome
+
+  def success_chance(c)
+    @_success_chance = c
+  end
+
+  def success(&blk)
+    @_success = Outcome.new
+    @_success.define(&blk)
+  end
+
+  def failure(&blk)
+    @_failure = Outcome.new
+    @_failure.define(&blk)
+  end
+
 end
 
 class Outcome
@@ -39,6 +105,11 @@ class Outcome
     @_changes = Changes.new
     @_changes.define(&blk)
   end
+
+  def define(&blk)
+    instance_eval(&blk)
+    self
+  end
 end
 
 class Requirements
@@ -52,7 +123,7 @@ class Requirements
   end
 
   def eq(quality, number: nil, text: nil)
-    @_requirements.append(Requirement.new(quality, :eq, { number: number, text: text }))
+    @_requirements.append(Requirement.new(quality, :eq, {number: number, text: text}))
   end
 
   def less_than(quality, number)
