@@ -31,6 +31,12 @@ class Storylet
     c.define(&blk)
     @_actions.append(c)
   end
+
+  def risk(&blk)
+    r = Risk.new
+    r.define(&blk)
+    @_actions.append(r)
+  end
 end
 
 class Choice
@@ -89,7 +95,6 @@ class Risk < Choice
     @_failure = Outcome.new
     @_failure.define(&blk)
   end
-
 end
 
 class Outcome
@@ -122,13 +127,36 @@ class Requirements
     self
   end
 
-  def eq(quality, number: nil, text: nil)
-    @_requirements.append(Requirement.new(quality, :eq, {number: number, text: text}))
+  def eq?(quality, number: nil, text: nil)
+    @_requirements.append(Requirement.new(quality, :eq, { number: number, text: text }))
   end
 
-  def less_than(quality, number)
+  def neq?(quality, number: nil, text: nil)
+    @_requirements.append(Requirement.new(quality, :neq, { number: number, text: text }))
+  end
+
+  def set?(quality)
+    @_requirements.append(Requirement.new(quality, :set))
+  end
+
+  def unset?(quality)
+    @_requirements.append(Requirement.new(quality, :unset))
+  end
+
+  def lt?(quality, number)
     @_requirements.append(Requirement.new(quality, :lt, number))
-    # TODO(nknight): Other ops (lt, gt, lte, gte, eq, neq, set, unset)
+  end
+
+  def gt?(quality, number)
+    @_requirements.append(Requirement.new(quality, :gt, number))
+  end
+
+  def gte?(quality, number)
+    @_requirements.append(Requirement.new(quality, :gte, number))
+  end
+
+  def lte?(quality, number)
+    @_requirements.append(Requirement.new(quality, :lte, number))
   end
 end
 
